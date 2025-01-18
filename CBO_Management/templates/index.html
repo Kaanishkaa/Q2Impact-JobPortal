@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community-Based Organization Management</title>
+</head>
+<body>
+    <h1>Community-Based Organization (CBO) Management</h1>
+
+    <form id="cboForm">
+        <label for="cboName">Organization Name:</label>
+        <input type="text" id="cboName" name="cboName" required><br><br>
+
+        <label for="cboLocation">Location:</label>
+        <input type="text" id="cboLocation" name="cboLocation" required><br><br>
+
+        <label for="cboDescription">Description of Activities:</label><br>
+        <textarea id="cboDescription" name="cboDescription" rows="4" cols="50" required></textarea><br><br>
+
+        <button type="submit">Add Organization</button>
+    </form>
+
+    <h2>Organizations List</h2>
+    <ul id="organizationsList"></ul>
+
+    <script>
+        const form = document.getElementById('cboForm');
+        const organizationsList = document.getElementById('organizationsList');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const name = document.getElementById('cboName').value;
+            const location = document.getElementById('cboLocation').value;
+            const description = document.getElementById('cboDescription').value;
+
+            const response = await fetch('/add_cbo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, location, description }),
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${name} - ${location} - ${description}`;
+                organizationsList.appendChild(listItem);
+                form.reset();
+            } else {
+                alert('Failed to add organization.');
+            }
+        });
+
+        // Fetch existing organizations on load
+        async function fetchOrganizations() {
+            const response = await fetch('/get_cbos');
+            const cbos = await response.json();
+            organizationsList.innerHTML = '';
+            cbos.forEach(cbo => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${cbo.name} - ${cbo.location} - ${cbo.description}`;
+                organizationsList.appendChild(listItem);
+            });
+        }
+
+        fetchOrganizations();
+    </script>
+</body>
+</html>
